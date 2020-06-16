@@ -215,18 +215,18 @@ void MineSweeper::print_menu(WINDOW *menu_window, MenuPosition menu_position, Mi
     wattron(menu_window, A_REVERSE);
     mvwprintw(menu_window, 10, 2, "[ start ]");
     wattroff(menu_window, A_REVERSE);
-    wprintw(menu_window, " [ << ]");
+    wprintw(menu_window, "  [ « ]");
   }
   else if (menu_position == MenuPosition::Return)
   {
-    mvwprintw(menu_window, 10, 2, "[ start ] ");
+    mvwprintw(menu_window, 10, 2, "[ start ]  ");
     wattron(menu_window, A_REVERSE);
-    wprintw(menu_window, "[ << ]");
+    wprintw(menu_window, "[ « ]");
     wattroff(menu_window, A_REVERSE);
   }
   else
   {
-    mvwprintw(menu_window, 10, 2, "[ start ] [ << ]");
+    mvwprintw(menu_window, 10, 2, "[ start ]  [ « ]");
   }
 
   wrefresh(menu_window);

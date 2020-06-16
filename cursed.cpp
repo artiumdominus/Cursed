@@ -11,6 +11,8 @@ void print_menu(WINDOW *menu_win, int highlight, string *games, int n_games);
 
 int main(int argc, const char *argv[])
 {
+  setlocale(LC_ALL, "");
+
   string games[] = {
     "Minesweeper",
     "Sokoban    ",
@@ -25,8 +27,6 @@ int main(int argc, const char *argv[])
   const int height = 11;
   int highlight = 1, choice = 0;
   int max_y, max_x, start_y, start_x, c;
-  
-  //setlocale(LC_ALL, "");
 
   // Init and setup ncurses
   initscr();
@@ -114,7 +114,7 @@ void print_menu(WINDOW *menu_window, int highlight, string *games, int n_games)
   {
     if (highlight == i + 1)
     {
-      mvwprintw(menu_window, y, x, ">");
+      mvwprintw(menu_window, y, x, "›");
       wattron(menu_window, A_REVERSE);
       mvwprintw(menu_window, y, x+2, "%s", games[i].c_str());
       wattroff(menu_window, A_REVERSE);
