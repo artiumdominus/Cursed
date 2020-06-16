@@ -4,22 +4,46 @@
 
 using namespace std;
 
+inline GameDifficulty& operator++(GameDifficulty& difficulty, int)
+{
+  difficulty = GameDifficulty((static_cast<int>(difficulty) + 1) % 3);
+  return difficulty;
+}
+
+inline GameDifficulty& operator--(GameDifficulty& difficulty, int)
+{
+  if (difficulty == GameDifficulty::Easy)
+  {
+    difficulty = GameDifficulty::Hard;
+    return difficulty;
+  }
+
+  difficulty = GameDifficulty(static_cast<int>(difficulty) - 1);
+  return difficulty;
+}
+
 inline MenuPosition& operator++(MenuPosition& position)
 {
-  position = MenuPosition(static_cast<int>(position) + 1);
+  position = MenuPosition((static_cast<int>(position) + 1) % 5);
   return position;
 }
 
 inline MenuPosition& operator--(MenuPosition& position)
 {
+  if (position == MenuPosition::Height)
+  {
+    position = MenuPosition::Return;
+    return position;
+  }
+
   position = MenuPosition(static_cast<int>(position) - 1);
   return position;
 }
 
-MineSweeper::MineSweeper(int l, int c)
+MineSweeper::MineSweeper(MineSweeperDTO dto)
 {
-  this->l = l;
-  this->c = c;
+  l = dto.height;
+  c = dto.width;
   cells = new char *[l];
   curtain = new char *[l];
   checked = new bool *[l];
@@ -75,10 +99,58 @@ void MineSweeper::menu()
         ++menu_position;
         break;
       case KEY_LEFT:
+        switch (menu_position)
+        {
+          case MenuPosition::Height:
+            dto.height--;
+            break;
+          case MenuPosition::Width:
+            dto.width--;
+            break;
+          case MenuPosition::Difficulty:
+            dto.difficulty--;
+            break;
+          case MenuPosition::Start:
+            menu_position = MenuPosition::Return;
+            break;
+          case MenuPosition::Return:
+            menu_position = MenuPosition::Start;
+            break;
+        }
         break;
       case KEY_RIGHT:
+        switch (menu_position)
+        {
+          case MenuPosition::Height:
+            dto.height++;
+            break;
+          case MenuPosition::Width:
+            dto.width++;
+            break;
+          case MenuPosition::Difficulty:
+            dto.difficulty++;
+            break;
+          case MenuPosition::Start:
+            menu_position = MenuPosition::Return;
+            break;
+          case MenuPosition::Return:
+            menu_position = MenuPosition::Start;
+            break;
+        }
         break;
       case 10:
+        switch (menu_position)
+        {
+        case MenuPosition::Start:
+          MineSweeper::play(dto);
+          break;
+        case MenuPosition::Return:
+          MineSweeper::destroy_menu(menu_window);
+          return;
+          break;
+        default:
+          break;
+        }
         break;
       default:
         break;
@@ -89,8 +161,14 @@ void MineSweeper::menu()
   return;
 }
 
-void MineSweeper::print_menu(WINDOW *menu_window, MenuPosition menu_position, MineSweeperDTO DTO)
+void MineSweeper::print_menu(WINDOW *menu_window, MenuPosition menu_position, MineSweeperDTO dto)
 {
+  const string difficulty_text[] = {
+    " easy ",
+    "medium",
+    " hard ",
+  };
+
   box(menu_window, 0, 0);
 
   mvwprintw(menu_window, 1, 2, "- Minesweeper -");
@@ -99,12 +177,12 @@ void MineSweeper::print_menu(WINDOW *menu_window, MenuPosition menu_position, Mi
   {
     mvwprintw(menu_window, 3, 3, "height: ");
     wattron(menu_window, A_REVERSE);
-    wprintw(menu_window, "< 00 >");
+    wprintw(menu_window, "< %02d >", dto.height);
     wattroff(menu_window, A_REVERSE);
   }
   else
   {
-    mvwprintw(menu_window, 3, 3, "height: < 00 >");
+    mvwprintw(menu_window, 3, 3, "height: < %02d >", dto.height);
   }
   
 
@@ -112,24 +190,24 @@ void MineSweeper::print_menu(WINDOW *menu_window, MenuPosition menu_position, Mi
   {
     mvwprintw(menu_window, 5, 3, "width:  ");
     wattron(menu_window, A_REVERSE);
-    wprintw(menu_window, "< 00 >");
+    wprintw(menu_window, "< %02d >", dto.width);
     wattroff(menu_window, A_REVERSE);
   }
   else
   {
-    mvwprintw(menu_window, 5, 3, "width:  < 00 >");
+    mvwprintw(menu_window, 5, 3, "width:  < %02d >", dto.width);
   }
   
   mvwprintw(menu_window, 7, 3, "difficulty:");
   if (menu_position == MenuPosition::Difficulty)
   {
     wattron(menu_window, A_REVERSE);
-    mvwprintw(menu_window, 8, 7, "< medium >");
+    mvwprintw(menu_window, 8, 7, "< %s >", difficulty_text[(int) dto.difficulty].c_str());
     wattroff(menu_window, A_REVERSE);
   }
   else
   {
-    mvwprintw(menu_window, 8, 7, "< medium >");
+    mvwprintw(menu_window, 8, 7, "< %s >", difficulty_text[(int) dto.difficulty].c_str());
   }
 
   if (menu_position == MenuPosition::Start)
@@ -154,4 +232,16 @@ void MineSweeper::print_menu(WINDOW *menu_window, MenuPosition menu_position, Mi
   wrefresh(menu_window);
 
   return;
+}
+
+void MineSweeper::destroy_menu(WINDOW *menu_window)
+{
+  wborder(menu_window, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
+  wrefresh(menu_window);
+  delwin(menu_window);
+}
+
+void MineSweeper::play(MineSweeperDTO dto)
+{
+  MineSweeper minesweeper = MineSweeper(dto);
 }

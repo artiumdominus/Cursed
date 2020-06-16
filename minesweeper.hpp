@@ -47,10 +47,19 @@ private:
 
 public:
 
-  MineSweeper(int, int);
+  MineSweeper(MineSweeperDTO);
 
   static void menu();
+  static void play(MineSweeperDTO);
+
+  void move_up();
+  void move_down();
+  void move_left();
+  void move_right();
+  void check();
+  void curtain_set();
 
 private:
   static void print_menu(WINDOW*, MenuPosition, MineSweeperDTO);
+  static void destroy_menu(WINDOW*);
 };

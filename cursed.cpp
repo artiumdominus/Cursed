@@ -23,10 +23,8 @@ int main(int argc, const char *argv[])
   WINDOW *menu_window;
   const int width = 17;
   const int height = 11;
-  int highlight = 1;
-  int choice = 0;
-  int max_y, max_x;
-  int start_y, start_x, c;
+  int highlight = 1, choice = 0;
+  int max_y, max_x, start_y, start_x, c;
   
   //setlocale(LC_ALL, "");
 
@@ -45,8 +43,8 @@ int main(int argc, const char *argv[])
   menu_window = newwin(height, width, start_y, start_x);
   keypad(menu_window, TRUE);
   refresh();
-  print_menu(menu_window, highlight, games, n_games);
   
+  print_menu(menu_window, highlight, games, n_games);
   while (1)
   {
     c = wgetch(menu_window);
@@ -77,11 +75,7 @@ int main(int argc, const char *argv[])
         break;
     }
 
-    if (!choice)
-    {
-      print_menu(menu_window, highlight, games, n_games);
-    }
-    else
+    if (choice)
     {
       switch (choice)
       {
@@ -97,12 +91,15 @@ int main(int argc, const char *argv[])
       default:
         break;
       }
+
+      highlight = 1;
+      choice = 0;
     }
+    
+    print_menu(menu_window, highlight, games, n_games);
   }
   
-  c = getch();
   endwin();
-
   return 0;
 }
 
