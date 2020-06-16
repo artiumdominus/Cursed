@@ -2,7 +2,36 @@ struct Point {
   int i, j;
 };
 
-class MineField
+enum class GameDifficulty
+{
+  Easy,
+  Medium,
+  Hard
+};
+
+enum class MenuPosition
+{
+  Height,
+  Width,
+  Difficulty,
+  Start,
+  Return
+};
+
+struct MineSweeperDTO
+{
+  int height;
+  int width;
+  GameDifficulty difficulty;
+
+  MineSweeperDTO() :
+    height(0),
+    width(0),
+    difficulty(GameDifficulty::Easy)
+  {}
+};
+
+class MineSweeper
 {
 private:
 
@@ -18,7 +47,10 @@ private:
 
 public:
 
-  MineField(int, int);
+  MineSweeper(int, int);
 
-  static void menu(int max_y, int max_x);
+  static void menu();
+
+private:
+  static void print_menu(WINDOW*, MenuPosition, MineSweeperDTO);
 };

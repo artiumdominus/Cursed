@@ -20,7 +20,7 @@ int main(int argc, const char *argv[])
   
   int n_games = 4; //sizeof(games) / sizeof(string *);
   
-  WINDOW *menu_win;
+  WINDOW *menu_window;
   const int width = 17;
   const int height = 11;
   int highlight = 1;
@@ -42,14 +42,14 @@ int main(int argc, const char *argv[])
   start_y = (max_y - height) / 2;
   start_x = (max_x - width) / 2;
 
-  menu_win = newwin(height, width, start_y, start_x);
-  keypad(menu_win, TRUE);
+  menu_window = newwin(height, width, start_y, start_x);
+  keypad(menu_window, TRUE);
   refresh();
-  print_menu(menu_win, highlight, games, n_games);
+  print_menu(menu_window, highlight, games, n_games);
   
   while (1)
   {
-    c = wgetch(menu_win);
+    c = wgetch(menu_window);
     switch (c)
     {
       case KEY_UP:
@@ -79,21 +79,21 @@ int main(int argc, const char *argv[])
 
     if (!choice)
     {
-      print_menu(menu_win, highlight, games, n_games);
+      print_menu(menu_window, highlight, games, n_games);
     }
     else
     {
       switch (choice)
       {
       case 1:
-        MineField::menu(max_y, max_x);
+        MineSweeper::menu();
         break;
       
       case 2:
       case 3:
       case 4:
-        break;
-      
+        endwin();
+        return 0;
       default:
         break;
       }
@@ -106,27 +106,27 @@ int main(int argc, const char *argv[])
   return 0;
 }
 
-void print_menu(WINDOW *menu_win, int highlight, string *games, int n_games)
+void print_menu(WINDOW *menu_window, int highlight, string *games, int n_games)
 {
   int x = 2;
   int y = 2;
 
-  box(menu_win, 0, 0);
+  box(menu_window, 0, 0);
   
   for (int i = 0; i < n_games; ++i)
   {
     if (highlight == i + 1)
     {
-      mvwprintw(menu_win, y, x, ">");
-      wattron(menu_win, A_REVERSE);
-      mvwprintw(menu_win, y, x+2, "%s", games[i].c_str());
-      wattroff(menu_win, A_REVERSE);
+      mvwprintw(menu_window, y, x, ">");
+      wattron(menu_window, A_REVERSE);
+      mvwprintw(menu_window, y, x+2, "%s", games[i].c_str());
+      wattroff(menu_window, A_REVERSE);
     }
     else
     {
-      mvwprintw(menu_win, y, x, "  %s", games[i].c_str());
+      mvwprintw(menu_window, y, x, "  %s", games[i].c_str());
     }
     y += 2;
   }
-  wrefresh(menu_win);
+  wrefresh(menu_window);
 }
