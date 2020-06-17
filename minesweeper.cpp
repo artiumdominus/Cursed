@@ -47,27 +47,27 @@ int MineSweeper::max_width = 2;
 
 MineSweeper::MineSweeper(MineSweeperDTO dto)
 {
-  l = dto.height;
-  c = dto.width;
-  cells = new char *[l];
-  curtain = new char *[l];
-  checked = new bool *[l];
+  lines = dto.height;
+  columns = dto.width;
+  cells = new char *[lines];
+  curtain = new char *[lines];
+  checked = new bool *[lines];
 
-  for (int i = 0; i < l; ++i)
+  for (int i = 0; i < lines; ++i)
   {
-    cells[i] = new char [c];
-    curtain[i] = new char [c];
-    checked[i] = new bool [c];
-    for (int j = 0; j < c; ++j)
+    cells[i] = new char [columns];
+    curtain[i] = new char [columns];
+    checked[i] = new bool [columns];
+    for (int j = 0; j < columns; ++j)
     {
       cells[i][j] = ' ';
       curtain[i][j] = '+';
       checked[i][j] = false;
     }
-
-    mines = 0;
-    locked = true;
   }
+
+  mines = 0;
+  locked = true;
 }
 
 void MineSweeper::menu()
@@ -293,5 +293,5 @@ void MineSweeper::destroy_menu(WINDOW *menu_window)
 
 void MineSweeper::play(MineSweeperDTO dto)
 {
-  MineSweeper minesweeper = MineSweeper(dto);
+  MineSweeper minesweeper(dto);
 }

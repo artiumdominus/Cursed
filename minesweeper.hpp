@@ -41,8 +41,8 @@ public:
 
 private:
 
-  int l;
-  int c;
+  int lines;
+  int columns;
   int mines;
   char **cells;
   char **curtain;
