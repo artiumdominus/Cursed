@@ -5,4 +5,4 @@ Para jogá-lo basta o compilar em um ambiente linux, as **Setas** movem o cursor
 
 ## Dependencias:
 - libncursesw5-dev
-- cmake > 3.10.3
+- cmake > (3.10.3)

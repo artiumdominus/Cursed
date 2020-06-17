@@ -1,12 +1,13 @@
 #include <ncurses.h>
 #include <iostream>
+#include <math.h>
 #include "minesweeper.hpp"
 
 using namespace std;
 
 inline GameDifficulty& operator++(GameDifficulty& difficulty, int)
 {
-  difficulty = GameDifficulty((static_cast<int>(difficulty) + 1) % 3);
+  difficulty = GameDifficulty((static_cast<int>(difficulty) + 1) % 4);
   return difficulty;
 }
 
@@ -14,7 +15,7 @@ inline GameDifficulty& operator--(GameDifficulty& difficulty, int)
 {
   if (difficulty == GameDifficulty::Easy)
   {
-    difficulty = GameDifficulty::Hard;
+    difficulty = GameDifficulty::Hell;
     return difficulty;
   }
 
@@ -49,25 +50,107 @@ MineSweeper::MineSweeper(MineSweeperDTO dto)
 {
   lines = dto.height;
   columns = dto.width;
-  cells = new char *[lines];
-  curtain = new char *[lines];
-  checked = new bool *[lines];
+
+  cells = new Cell *[lines];
 
   for (int i = 0; i < lines; ++i)
   {
-    cells[i] = new char [columns];
-    curtain[i] = new char [columns];
-    checked[i] = new bool [columns];
+    cells[i] = new Cell [columns];
+
     for (int j = 0; j < columns; ++j)
     {
-      cells[i][j] = ' ';
-      curtain[i][j] = '+';
-      checked[i][j] = false;
+      cells[i][j].value = ' ';
+      cells[i][j].curtain = '+';
+      cells[i][j].checked = false;
     }
   }
 
-  mines = 0;
-  locked = true;
+  const double mines_rate[] = { 0.1, 0.15, 0.2, 0.3 };
+
+  mines = ceil( lines * columns * mines_rate[(int) dto.difficulty] );
+
+  int neighborhood[lines][columns];
+
+  for (int i = 0; i < lines; ++i)
+  {
+    for (int j = 0; j < columns; ++j)
+    {
+      neighborhood[i][j] = 0;
+    }
+  }
+
+  srand(time(NULL));
+  for (int n = 1; n <= mines; ++n)
+  {
+    bool ok = false;
+    do
+    {
+      int i = rand() % lines;
+      int j = rand() % columns;
+
+      if (cells[i][j].value != 'o')
+      {
+        cells[i][j].value = 'o';
+
+        if (i > 0)
+        {
+          neighborhood[i-1][j]++;
+
+          if (j > 0)
+          {
+            neighborhood[i-1][j-1]++;
+          }
+
+          if (j < columns-1)
+          {
+            neighborhood[i-1][j+1]++;
+          }
+        }
+
+        if (i < lines-1)
+        {
+          neighborhood[i+1][j]++;
+
+          if (j > 0)
+          {
+            neighborhood[i+1][j-1]++;
+          }
+
+          if (j < columns-1)
+          {
+            neighborhood[i+1][j+1]++;
+          }
+        }
+
+        if (j > 0)
+        {
+          neighborhood[i][j-1]++;
+        }
+
+        if (j < columns-1)
+        {
+          neighborhood[i][j+1]++;
+        }
+
+        ok = true;
+      }
+    } while(!ok);
+  }
+
+  for (int i = 0; i < lines; ++i)
+  {
+    for (int j = 0; j < columns; ++j)
+    {
+      if (neighborhood[i][j] > 0 && cells[i][j].value != 'o')
+      {
+        cells[i][j].value = '0' + neighborhood[i][j];
+      }
+    }
+  }
+
+  n_checked = 0;
+  cursor = Point(lines/2, columns/2);
+  locked = false;
 }
 
 void MineSweeper::menu()
@@ -190,6 +273,7 @@ void MineSweeper::print_menu(WINDOW *menu_window, MenuPosition menu_position, Mi
     " easy ",
     "medium",
     " hard ",
+    " hell "
   };
 
   box(menu_window, 0, 0);
