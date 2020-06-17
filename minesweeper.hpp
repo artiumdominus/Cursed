@@ -33,6 +33,12 @@ struct MineSweeperDTO
 
 class MineSweeper
 {
+public:
+  static int min_height;
+  static int min_width;
+  static int max_height;
+  static int max_width;
+
 private:
 
   int l;

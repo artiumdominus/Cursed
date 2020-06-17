@@ -40,6 +40,11 @@ inline MenuPosition& operator--(MenuPosition& position)
   return position;
 }
 
+int MineSweeper::min_height = 2;
+int MineSweeper::min_width = 2;
+int MineSweeper::max_height = 2;
+int MineSweeper::max_width = 2;
+
 MineSweeper::MineSweeper(MineSweeperDTO dto)
 {
   l = dto.height;
@@ -81,6 +86,12 @@ void MineSweeper::menu()
   MenuPosition menu_position = MenuPosition::Height;
   MineSweeperDTO dto;
 
+  max_height = (max_y - 1) / 2;
+  max_width  = (max_x - 1) / 4;
+
+  dto.height = max_height;
+  dto.width = max_width;
+
   menu_window = newwin(menu_height, menu_width, starty, startx);
   keypad(menu_window, TRUE);
 
@@ -102,10 +113,16 @@ void MineSweeper::menu()
         switch (menu_position)
         {
           case MenuPosition::Height:
-            dto.height--;
+            if (dto.height > min_height)
+            {
+              dto.height--;
+            }
             break;
           case MenuPosition::Width:
-            dto.width--;
+            if (dto.width > min_width)
+            {
+              dto.width--;
+            }
             break;
           case MenuPosition::Difficulty:
             dto.difficulty--;
@@ -122,10 +139,16 @@ void MineSweeper::menu()
         switch (menu_position)
         {
           case MenuPosition::Height:
-            dto.height++;
+            if (dto.height < max_height)
+            {
+              dto.height++;
+            }
             break;
           case MenuPosition::Width:
-            dto.width++;
+            if (dto.width < max_width)
+            {
+              dto.width++;
+            }
             break;
           case MenuPosition::Difficulty:
             dto.difficulty++;
@@ -177,25 +200,52 @@ void MineSweeper::print_menu(WINDOW *menu_window, MenuPosition menu_position, Mi
   {
     mvwprintw(menu_window, 3, 3, "height: ");
     wattron(menu_window, A_REVERSE);
-    wprintw(menu_window, "< %02d >", dto.height);
+    wprintw(
+      menu_window,
+      "%c %02d %c",
+      (dto.height > min_height ? '<' : '['),
+      dto.height,
+      (dto.height < max_height ? '>' : ']')
+    );
     wattroff(menu_window, A_REVERSE);
   }
   else
   {
-    mvwprintw(menu_window, 3, 3, "height: < %02d >", dto.height);
+    mvwprintw(
+      menu_window,
+      3,
+      3,
+      "height: %c %02d %c",
+      (dto.height > min_height ? '<' : '['),
+      dto.height,
+      (dto.height < max_height ? '>' : ']')
+    );
   }
   
-
   if (menu_position == MenuPosition::Width)
   {
     mvwprintw(menu_window, 5, 3, "width:  ");
     wattron(menu_window, A_REVERSE);
-    wprintw(menu_window, "< %02d >", dto.width);
+    wprintw(
+      menu_window,
+      "%c %02d %c",
+      (dto.width > min_width ? '<' : '['),
+      dto.width,
+      (dto.width < max_width ? '>' : ']')
+    );
     wattroff(menu_window, A_REVERSE);
   }
   else
   {
-    mvwprintw(menu_window, 5, 3, "width:  < %02d >", dto.width);
+    mvwprintw(
+      menu_window,
+      5,
+      3,
+      "width:  %c %02d %c",
+      (dto.width > min_width ? '<' : '['),
+      dto.width,
+      (dto.width < max_width ? '>' : ']')
+    );
   }
   
   mvwprintw(menu_window, 7, 3, "difficulty:");
