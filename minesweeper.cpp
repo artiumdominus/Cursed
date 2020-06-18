@@ -155,7 +155,7 @@ MineSweeper::MineSweeper(MineSweeperDTO dto)
 
 void MineSweeper::menu()
 {
-  WINDOW *menu_window;
+  //WINDOW *menu_window;
   
   int menu_height = 12;
   int menu_width = 20;
@@ -175,13 +175,13 @@ void MineSweeper::menu()
   dto.height = max_height;
   dto.width = max_width;
 
-  menu_window = newwin(menu_height, menu_width, starty, startx);
+  WINDOW *menu_window = newwin(menu_height, menu_width, starty, startx);
   keypad(menu_window, TRUE);
 
   MineSweeper::print_menu(menu_window, menu_position, dto);
 
   int c;
-  while(1)
+  while (1)
   {
     c = wgetch(menu_window);
     switch (c)
@@ -378,4 +378,157 @@ void MineSweeper::destroy_menu(WINDOW *menu_window)
 void MineSweeper::play(MineSweeperDTO dto)
 {
   MineSweeper minesweeper(dto);
+
+  int game_height = (dto.height * 2) + 1;
+  int game_width = (dto.width * 4) + 2;
+
+  int max_y, max_x;
+
+  getmaxyx(stdscr, max_y, max_x);
+
+  int starty = (max_y - game_height) / 2;
+  int startx = (max_x - game_width) / 2;
+
+  WINDOW *game_window = newwin(game_height, game_width, starty, startx); // alterar posição
+  keypad(game_window, TRUE);
+
+  minesweeper.render(game_window);
+
+  int c;
+  while (1)
+  {
+    c = wgetch(game_window);
+    switch (c)
+    {
+      case KEY_UP:
+        minesweeper.move_up();
+        break;
+      case KEY_DOWN:
+        minesweeper.move_down();
+        break;
+      case KEY_LEFT:
+        minesweeper.move_left();
+        break;
+      case KEY_RIGHT:
+        minesweeper.move_right();
+        break;
+      case 10:
+        break;
+      case ' ':
+        minesweeper.curtain_set();
+        break;
+    }
+    minesweeper.render(game_window);
+  }
+}
+
+void MineSweeper::render(WINDOW *game_window)
+{
+  int i, j;
+
+  wmove(game_window, 0, 0);
+
+  wprintw(game_window, "┌───");
+  for (j = 1; j < columns; ++j)
+  {
+    wprintw(game_window, "┬───");
+  }
+  wprintw(game_window, "┐\n");
+
+  for (i = 0; i < lines; ++i)
+  {
+    wprintw(game_window, "│");
+    for (j = 0; j < columns; ++j)
+    {
+      wprintw(
+        game_window,
+        "%c%c%c│",
+        (cursor.i == i && cursor.j == j ? '[' : ' '),
+        (cells[i][j].checked ? cells[i][j].value : cells[i][j].curtain),
+        (cursor.i == i && cursor.j == j ? ']' : ' ')
+      );
+    }
+    wprintw(game_window, "\n");
+
+    if (i < lines-1)
+    {
+      wprintw(game_window, "├───");
+      for (j = 1; j < columns; ++j)
+      {
+        wprintw(game_window, "┼───");
+      }
+      wprintw(game_window, "┤\n");
+    }
+  }
+
+  wprintw(game_window, "└───");
+  for (j = 1; j < columns; ++j)
+  {
+    wprintw(game_window, "┴───");
+  }
+  wprintw(game_window, "┘\n");
+}
+
+void MineSweeper::move_up()
+{
+  if (cursor.i == 0)
+  {
+    cursor.i = lines - 1;
+  }
+  else
+  {
+    cursor.i--;
+  }
+}
+
+void MineSweeper::move_down()
+{
+  if (cursor.i == lines - 1)
+  {
+    cursor.i = 0;
+  }
+  else
+  {
+    cursor.i++;
+  }
+}
+
+void MineSweeper::move_left()
+{
+  if (cursor.j == 0)
+  {
+    cursor.j = columns - 1;
+  }
+  else
+  {
+    cursor.j--;
+  }
+}
+
+void MineSweeper::move_right()
+{
+  if (cursor.j == columns - 1)
+  {
+    cursor.j = 0;
+  }
+  else
+  {
+    cursor.j++;
+  }
+}
+
+void MineSweeper::curtain_set()
+{
+  switch (cells[cursor.i][cursor.j].curtain)
+  {
+    case '+':
+      cells[cursor.i][cursor.j].curtain = '!';
+      break;
+    case '!':
+      cells[cursor.i][cursor.j].curtain = '?';
+      break;
+    case '?':
+      cells[cursor.i][cursor.j].curtain = '+';
+      break;
+  }
 }
