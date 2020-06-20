@@ -75,11 +75,12 @@ class MineSweeper
     void move_left();
     void move_right();
     void curtain_set();
-    void check();
+    bool check();
 
   private:
     static void print_menu(WINDOW*, MenuPosition, MineSweeperDTO);
     static void destroy_menu(WINDOW*);
 
     void render(WINDOW*);
+    bool win();
 };

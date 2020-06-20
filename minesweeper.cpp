@@ -1,6 +1,7 @@
 #include <ncurses.h>
 #include <iostream>
 #include <math.h>
+#include <queue>
 #include "minesweeper.hpp"
 
 using namespace std;
@@ -395,8 +396,10 @@ void MineSweeper::play(MineSweeperDTO dto)
   minesweeper.render(game_window);
 
   int c;
-  while (1)
+  bool continue_game = true;
+  do
   {
+    minesweeper.render(game_window);
     c = wgetch(game_window);
     switch (c)
     {
@@ -413,13 +416,15 @@ void MineSweeper::play(MineSweeperDTO dto)
         minesweeper.move_right();
         break;
       case 10:
+        continue_game = minesweeper.check();
         break;
       case ' ':
         minesweeper.curtain_set();
         break;
     }
-    minesweeper.render(game_window);
-  }
+  } while (continue_game);
+
+  delwin(game_window);
 }
 
 void MineSweeper::render(WINDOW *game_window)
@@ -427,6 +432,8 @@ void MineSweeper::render(WINDOW *game_window)
   int i, j;
 
   wmove(game_window, 0, 0);
+
+  wattron(game_window, A_REVERSE);
 
   wprintw(game_window, "┌───");
   for (j = 1; j < columns; ++j)
@@ -467,6 +474,8 @@ void MineSweeper::render(WINDOW *game_window)
     wprintw(game_window, "┴───");
   }
   wprintw(game_window, "┘\n");
+
+  wattroff(game_window, A_REVERSE);
 }
 
 void MineSweeper::move_up()
@@ -519,16 +528,85 @@ void MineSweeper::move_right()
 
 void MineSweeper::curtain_set()
 {
-  switch (cells[cursor.i][cursor.j].curtain)
+  Cell *cell = &cells[cursor.i][cursor.j];
+
+  switch (cell->curtain)
   {
     case '+':
-      cells[cursor.i][cursor.j].curtain = '!';
+      cell->curtain = '!';
       break;
     case '!':
-      cells[cursor.i][cursor.j].curtain = '?';
+      cell->curtain = '?';
       break;
     case '?':
-      cells[cursor.i][cursor.j].curtain = '+';
+      cell->curtain = '+';
       break;
   }
+}
+
+bool MineSweeper::check()
+{
+  if (cells[cursor.i][cursor.j].checked)
+  {
+    return true;
+  }
+
+  int i = cursor.i;
+  int j = cursor.j;
+
+  cells[i][j].checked = true;
+  ++n_checked;
+
+  if (cells[i][j].value == 'o')
+  {
+    // deal lose game
+
+    return false;
+  }
+
+  if (cells[i][j].value == ' ')
+  {
+    queue<Point> discovered;
+    discovered.push(Point(i, j));
+    while (!discovered.empty())
+    {
+      Point cell_position = discovered.front();
+      discovered.pop();
+
+      for (i = cell_position.i-1; i <= cell_position.i+1; ++i)
+      {
+        for (j = cell_position.j-1; j <= cell_position.j+1; ++j)
+        {
+          if (
+            (i >= 0 && i < lines) &&
+            (j >= 0 && j < columns) &&
+            (i != cell_position.i || j != cell_position.j) &&
+            !cells[i][j].checked
+          )
+          {
+            cells[i][j].checked = true;
+            ++n_checked;
+            if (cells[i][j].value == ' ')
+            {
+              discovered.push(Point(i, j));
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (win())
+  {
+      //deal win
+
+      return false;
+  }
+
+  return true;
+}
+
+bool MineSweeper::win()
+{
+  return (lines * columns) - mines == n_checked;
 }
