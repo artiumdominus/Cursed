@@ -149,7 +149,7 @@ MineSweeper::MineSweeper(MineSweeperDTO dto)
     }
   }
 
-  n_checked = 0;
+  n_checked = n_marked = 0;
   cursor = Point(lines/2, columns/2);
   locked = false;
 }
@@ -170,7 +170,7 @@ void MineSweeper::menu()
   MenuPosition menu_position = MenuPosition::Height;
   MineSweeperDTO dto;
 
-  max_height = (max_y - 1) / 2;
+  max_height = (max_y - 3) / 2;
   max_width  = (max_x - 1) / 4;
 
   dto.height = max_height;
@@ -380,7 +380,7 @@ void MineSweeper::play(MineSweeperDTO dto)
 {
   MineSweeper minesweeper(dto);
 
-  int game_height = (dto.height * 2) + 1;
+  int game_height = (dto.height * 2) + 3;
   int game_width = (dto.width * 4) + 2;
 
   int max_y, max_x;
@@ -438,9 +438,22 @@ void MineSweeper::render(WINDOW *game_window)
   wprintw(game_window, "┌───");
   for (j = 1; j < columns; ++j)
   {
-    wprintw(game_window, "┬───");
+    wprintw(game_window, "────");
   }
   wprintw(game_window, "┐\n");
+
+  wprintw(game_window, "│");
+  wprintw(game_window, "%2d/%2d", n_marked, mines);
+  int n_spaces = 4 * (columns - 2) + 2;
+  for (int n = 0; n < n_spaces; ++n) wprintw(game_window, " ");
+  wprintw(game_window, "│\n");
+
+  wprintw(game_window, "├───");
+  for (j = 1; j < columns; ++j)
+  {
+    wprintw(game_window, "┬───");
+  }
+  wprintw(game_window, "┤\n");
 
   for (i = 0; i < lines; ++i)
   {
@@ -534,8 +547,10 @@ void MineSweeper::curtain_set()
   {
     case '+':
       cell->curtain = '!';
+      n_marked++;
       break;
     case '!':
+      n_marked--;
       cell->curtain = '?';
       break;
     case '?':

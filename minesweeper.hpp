@@ -60,6 +60,7 @@ class MineSweeper
     int mines;
     Cell **cells;
     int n_checked;
+    int n_marked;
     bool locked;
     Point cursor;
 
